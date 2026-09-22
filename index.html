@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carta para ti</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Seaweed+Script&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f6f1e7'/%3E%3Cpath d='M17 13h24l6 7v31H17z' fill='%23fffaf0' stroke='%23332720' stroke-width='4'/%3E%3Cpath d='M41 13v9h8' fill='none' stroke='%23332720' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M24 32h19M24 40h14' stroke='%23857062' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+
+  <style>
+    :root {
+      --ink: #2f261f;
+      --soft-ink: #5d5147;
+      --paper: #f7f3e9;
+      --paper-deep: #eee6d7;
+      --paper-line: rgba(71, 61, 51, 0.14);
+      --shadow: rgba(9, 7, 5, 0.46);
+      --button-border: rgba(218, 255, 255, 0.86);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #06080b;
+      color: var(--ink);
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Atkinson Hyperlegible Next", Arial, sans-serif;
+    }
+
+    .sky-video {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.015);
+      filter: brightness(0.92) saturate(1.02);
+      transition: filter 1600ms ease, transform 2200ms ease;
+      z-index: 0;
+    }
+
+    .background-shade {
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(8, 10, 13, 0.12), rgba(8, 10, 13, 0.58)),
+        radial-gradient(circle at center, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.38));
+      opacity: 0.26;
+      transition: opacity 1600ms ease, background 1600ms ease;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .start-layer {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: linear-gradient(180deg, rgba(5, 7, 10, 0.1), rgba(5, 7, 10, 0.36));
+      z-index: 5;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 700ms ease, visibility 700ms ease;
+    }
+
+    .start-button {
+      position: relative;
+      isolation: isolate;
+      min-width: 184px;
+      border: 1px solid var(--button-border);
+      border-radius: 999px;
+      padding: 15px 30px 16px;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(213, 255, 255, 0.9) 18%, rgba(58, 226, 236, 0.96) 45%, rgba(12, 158, 189, 0.98) 48%, rgba(35, 205, 229, 0.96) 100%);
+      color: #063340;
+      box-shadow:
+        0 20px 56px rgba(0, 0, 0, 0.34),
+        0 0 26px rgba(84, 239, 247, 0.34),
+        0 1px 0 rgba(255, 255, 255, 0.92) inset,
+        0 -8px 16px rgba(0, 91, 123, 0.3) inset,
+        0 0 0 1px rgba(0, 98, 130, 0.2);
+      cursor: pointer;
+      font-family: "Atkinson Hyperlegible Next", Arial, sans-serif;
+      font-size: clamp(1.02rem, 2.8vw, 1.22rem);
+      font-weight: 700;
+      letter-spacing: 0;
+      line-height: 1;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.86), 0 -1px 0 rgba(0, 72, 96, 0.16);
+      transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+    }
+
+    .start-button::before,
+    .start-button::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .start-button::before {
+      left: 9px;
+      right: 9px;
+      top: 4px;
+      height: 42%;
+      border-radius: 999px 999px 44% 44%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.24));
+      filter: blur(0.1px);
+    }
+
+    .start-button::after {
+      left: 13%;
+      top: 9px;
+      width: 38%;
+      height: 19%;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      transform: rotate(-8deg);
+    }
+
+    .start-button:hover,
+    .start-button:focus-visible {
+      box-shadow:
+        0 22px 64px rgba(0, 0, 0, 0.42),
+        0 0 34px rgba(101, 255, 255, 0.46),
+        0 1px 0 rgba(255, 255, 255, 0.95) inset,
+        0 -8px 16px rgba(0, 91, 123, 0.28) inset,
+        0 0 0 1px rgba(0, 98, 130, 0.2);
+      filter: saturate(1.12) brightness(1.04);
+      outline: none;
+      transform: translateY(-2px);
+    }
+
+    .letter-stage {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: clamp(18px, 4vw, 48px);
+      pointer-events: none;
+    }
+
+    .letter-card {
+      position: relative;
+      width: min(780px, 92vw);
+      max-height: min(78vh, 760px);
+      opacity: 0;
+      transform: translateY(42px) scale(0.985);
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0) 18%),
+        linear-gradient(180deg, var(--paper), var(--paper-deep));
+      border: 1px solid rgba(255, 255, 255, 0.54);
+      border-radius: 4px;
+      box-shadow:
+        0 24px 80px var(--shadow),
+        0 3px 0 rgba(255, 255, 255, 0.28) inset,
+        0 -18px 38px rgba(135, 112, 83, 0.12) inset;
+      overflow: hidden;
+      transition: opacity 1000ms ease, transform 1000ms cubic-bezier(.2, .82, .22, 1);
+      pointer-events: none;
+    }
+
+    .letter-card::before,
+    .letter-card::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .letter-card::before {
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(82, 65, 45, 0.12), rgba(255, 255, 255, 0) 12%, rgba(0, 0, 0, 0.035) 100%),
+        radial-gradient(circle at 22% 10%, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0) 34%);
+      mix-blend-mode: multiply;
+      opacity: 0.7;
+      z-index: 1;
+    }
+
+    .letter-card::after {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 78px;
+      background: linear-gradient(180deg, rgba(247, 243, 233, 0), rgba(238, 230, 215, 0.95));
+      z-index: 3;
+      opacity: 0;
+      transition: opacity 250ms ease;
+    }
+
+    .letter-scroll {
+      position: relative;
+      z-index: 2;
+      max-height: min(78vh, 760px);
+      padding: clamp(28px, 5vw, 56px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(47, 38, 31, 0.34) transparent;
+    }
+
+    .letter-scroll::-webkit-scrollbar {
+      width: 9px;
+    }
+
+    .letter-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .letter-scroll::-webkit-scrollbar-thumb {
+      border: 3px solid transparent;
+      border-radius: 999px;
+      background: rgba(47, 38, 31, 0.34);
+      background-clip: content-box;
+    }
+
+    .letter-title {
+      margin: 0 0 24px;
+      font-family: "Seaweed Script", "Segoe Script", cursive;
+      font-size: clamp(2.55rem, 7vw, 4.35rem);
+      font-weight: 400;
+      line-height: 0.95;
+      letter-spacing: 0;
+      color: #332720;
+    }
+
+    .letter-date {
+      margin: 0 0 30px;
+      font-family: "Seaweed Script", "Segoe Script", cursive;
+      font-size: clamp(1.7rem, 4vw, 2.55rem);
+      font-weight: 400;
+      line-height: 1;
+      color: #36271f;
+    }
+
+    .letter-divider {
+      width: 100%;
+      height: 1px;
+      margin: 0 0 34px;
+      border: 0;
+      background: var(--paper-line);
+    }
+
+    .letter-copy {
+      font-size: clamp(1rem, 2.2vw, 1.15rem);
+      line-height: 1.78;
+      color: #1f1d1a;
+    }
+
+    .letter-copy p {
+      margin: 0 0 1.55rem;
+    }
+
+    .letter-copy p:last-child {
+      margin-bottom: 0;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      left: 50%;
+      bottom: 16px;
+      z-index: 4;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(247, 243, 233, 0.76);
+      box-shadow: 0 7px 20px rgba(47, 38, 31, 0.13);
+      opacity: 0;
+      transform: translateX(-50%) translateY(8px);
+      transition: opacity 240ms ease, transform 240ms ease;
+      pointer-events: none;
+    }
+
+    .scroll-hint::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-right: 2px solid rgba(47, 38, 31, 0.72);
+      border-bottom: 2px solid rgba(47, 38, 31, 0.72);
+      transform: translateY(-2px) rotate(45deg);
+      animation: hintPulse 1450ms ease-in-out infinite;
+    }
+
+    @keyframes hintPulse {
+      0%,
+      100% {
+        opacity: 0.45;
+        transform: translateY(-5px) rotate(45deg);
+      }
+
+      50% {
+        opacity: 1;
+        transform: translateY(1px) rotate(45deg);
+      }
+    }
+
+    body.started .start-layer {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    body.letter-visible .sky-video {
+      filter: brightness(0.42) saturate(0.78);
+      transform: scale(1.045);
+    }
+
+    body.letter-visible .background-shade {
+      opacity: 0.72;
+      background:
+        linear-gradient(180deg, rgba(6, 8, 10, 0.26), rgba(6, 8, 10, 0.74)),
+        radial-gradient(circle at center, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.54));
+    }
+
+    body.letter-visible .letter-card {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .letter-card.has-more::after,
+    .letter-card.has-more .scroll-hint {
+      opacity: 1;
+    }
+
+    .letter-card.has-more .scroll-hint {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 620px) {
+      .letter-card {
+        width: min(94vw, 780px);
+        max-height: 80vh;
+      }
+
+      .letter-scroll {
+        max-height: 80vh;
+        padding: 30px 24px 46px;
+      }
+
+      .letter-title {
+        margin-bottom: 20px;
+      }
+
+      .letter-date {
+        margin-bottom: 24px;
+      }
+
+      .letter-divider {
+        margin-bottom: 28px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 1ms !important;
+        scroll-behavior: auto !important;
+        transition-duration: 1ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <video class="sky-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+    <source src="res/Sky.mp4" type="video/mp4">
+  </video>
+
+  <div class="background-shade" aria-hidden="true"></div>
+
+  <div class="start-layer">
+    <button class="start-button" type="button">Abrir carta</button>
+  </div>
+
+  <main class="letter-stage" aria-label="Carta">
+    <article class="letter-card" id="letterCard">
+      <div class="letter-scroll" id="letterScroll" tabindex="0">
+        <h1 class="letter-title">Carta para ti</h1>
+        <p class="letter-date">Septiembre 21, 2026</p>
+        <hr class="letter-divider">
+        <p>Querida Roxanna,</p>
+            <p>Admito que no me siento con el derecho de poder escribirte una carta.</p>
+            <p>Primero lo primero, siempre te he admirado y pensado que eres alguien inteligente, agradable y linda.
+              La primera vez que te vi sentí un shock dentro de mí, creo que para ese entonces no había visto a alguien que me atrajera tanto como tu, 
+              cuando noté que llevabas un gorro parecido al de Jotaro pensé en que debía hablarte al instante, pero como usualmente pasa, me quedé sin palabras.
+              Después de no poder verte un tiempo, noté que algunos compañeros tuyos compartían clases conmigo, así que empecé a preguntar si te conocían, que si cual era tu nombre y demás.</p>
+              <p>Me contaron que compartía salón contigo en una clase, la gran coincidencia fue que incluso me sentaba donde tu lo hacías, así que saqué mi lapiz y dibujé un DIO de la parte tres para llamar tu atención de algún modo.
+              Al principio uno de tus compañeros pensó que era otra persona, lo que más me interesó a mí era que tu lo notarás.
+              Al tiempo se dio que estuvieras en el salón en donde iba a tener mi clase, te vi y de nuevo me quedé sin palabras. Estuve pensando un rato en como hablarte hasta que tomaste tus cosas y estabas yendo hacía la puerta
+              entre en modo de panico y simplemente te hablé, me sorprendí lo amable que eras y como no me empujaste de manera fría o me ignoraste al segundo, estaba super nervioso y sabía que sentía algo por ti.
+              </p>
+              <p>Estoy seguro de que después de eso ya no nos volvimos a ver, pero ese fue el momento a resaltar para mi de ese semestre.
+                No fue sino hasta el semestre siguiente donde por fin se me dio la oportunidad de compartir clases contigo, el primer día me senté en quién sabe donde, no sé si fue por el pase de lista o tu estabas presente, pero supe que tenía que cambiar asientos
+                (lo sé, en retrospectiva suena extraño). Entonces al día siguiente me cambié de lugar para poder estar a tu lado, todavía me ponía muy nervioso el estar contigo pero ya era un avance poder hablarte en sí. Cuando por fin te pedí tu número de teléfono sentía una especie de 
+              felicidad que no podía nombrar, al fin tenía una manera directa de contactarte y compartir mis gustos contigo, posiblemente más ! Entonces siguió el semestre y mi horario era pesimo, entraba lo más temprano posible y salía tarde, pero no importaba porque iba a poder verte.
+              </p>
+              <p>Empezamos a chatear, te pedí tu FB y todo iba bien, un día te quise invitar al cine a ver una película porque pensé en que es lo apropiado si yo quería estar contigo en una relación. No obstante obtuve un no de tu parte, ya que al parecer notabas que yo sentía algo por ti, y
+                estabas en lo correcto, admito que dormí pesimo esa noche por el miedo y demás, pero la vida seguía adelante de todas maneras, después dejamos de hablar por un tiempo y así se quedó.
+              </p>
+
+              <p>
+                Recuerdo que por esos tiempos también había atendido a una convención y constantemente estaba buscando algo que posiblemente te gustara, encontré un pin de una falsa oronja y me moría de ganas por regalartelo, eventualmente volvimos a tener clases en web y te lo dí, la verdad me encantó que te gustara
+                 pero cuando la clase terminó, salimos del salón y se cayó de tu mochila en algún punto, pensé en decirte pero no lo hice porque pensé en que me iba a ver ¿extraño? En retrospectiva, que estupidez.
+              </p>
+
+              <p>
+                Seguí adelante, pero había algo que no me lo permitía, el saber que ahí estabas, poder contactarte en cualquier segundo, pero no hacerlo por las normas sociales y demás, en tu cumpleaños decidí felicitarte y reanudamos nuestras charlas esporadicas.
+                Dejamos de hablar, no estoy seguro de si te había invitado a salir de nuevo o algo así, pero en fin, ahí acabó la cosa de nuevo. Conocí a más personas, conecté con ellas, pero nadie es como tu, ¿Sabes? Eres una en 8,317,798,210 de personas, créetelo.
+              </p>
+              <p>
+                En fin, empieza 2026 y yo por alguna razón sentí que este año sería diferente todo, estaba empezando a dejarte de lado, olvidar que fallé en poder entablar algo más profundo contigo las veces anteriores, estaba enfocado en la escuela y ya, mi manera de llevar el pasado era en que ya te habías graduado, nunca te volvería a ver en persona de nuevo.
+                Yo no soy alguien que cree en cosas místicas ni nada por el estilo, pero, ¿Qué clase de jugada me hizo el destino o la vida?
+              </p>
+              <p>
+                Justo cuando sentía que estaba por dejar de pensar en ti y lo que pudo ser, apareces, sin anunciar, al terminar una clase, te veo entrar y puedo sentir como mi sangre pesa 10 veces más, mi corazón cae a mi estomago y mi cara se pone pálida, la mujer que llevaba rato tratando de olvidar y que estaba seguro que nunca volvería a ver
+                estaba enfrente de mí. Y me estaba dirigiendo la palabra, me volví a sentir como la primera vez que te hablé, no sabía que decir o como llevarla calmado. Después de que salí corriendo o así me pareció en mi mente, tuve un bajón en mi actitud, me sentía un extraño, me preguntaba ¿Por qué? Esto iba tan bien.
+              </p>
+              <p>
+                Tal vez olvidarte hubiera sido más fácil si no compartieramos tantos gustos o que muchas cosas no me recordaran a ti, como los champiñones, tus gustos en música, los pañuelos y hasta tu cabello, irónicamente, tu nombre no es uno que sea común, lo cual hace que resalte todavía más cuando lo escucho o leo.
+              </p>
+              <p>
+                Al tiempo mis amigos me empezaron a dar aliento en que tal vez tenga una oportunidad contigo, y yo me lo creí, volví a hablarte este año y quise invitarte a salir a tomar café o algo, incluso el profe Nacho me dio la buena suerte para hacerlo, pero igual, no se pudo, pero no podía darme por vencido, seguimos hablando y yo tenía esperanza de nuevo.
+                Sentía algo diferente esta vez que te hablé, me solté más, te daba un que otro cumplido, algo que mi yo pasado ni de chiste haría, quise volver a invitarte pero yo entendía que no se podía, no quería rendirme, después de eso, me contaste de aquello que pasó en la fiesta y quise dejar de hablarte, no por alguna especie de derecho que sintiera hacía a ti
+                o algo por ese estilo, simplemente quise que siguieras adelante con lo tuyo sin interrupciones.
+              </p>
+              <p>
+                ¿A qué voy con esta "carta"? Quise darle voz a mis sentimientos, ya que después de tanto tiempo, sigo sintiendo algo por ti, y sé por qué, me encantan tus gustos, me gusta tu apariencia, pienso que eres alguien muy inteligente, alguien con la que es muy agradable estar, pero tampoco estoy diciendo que me tienes que aceptar o algo así. Lejos de eso, 
+                es solo que llevo alrededor de tres o hasta cuatro años con estos sentimientos embotellados, y de acuerdo a lo que he leído, esto es horrible para mí salud, y al ver que simplemente no tengo otra manera de decirte esto o sacarlo de mi pecho, decidí hacerte esta carta.
+                "Todo lo que uno entierra, lo entierra vivo."
+              </p>
+              <p>
+                Y así es como termino esta carta, realmente no estoy esperando nada de tu parte, hasta cierto punto hago esta carta para mí más que para ti, ya que siento que no soporto tener todo esto guardado en mí, ni tampoco quiero hacerte sentir mal o lástima, eso no le sirve de nada a nadie. Pero espero que esto te haga entender lo que siento por ti, 
+                y la perspectiva de alguien que no siente que alguna vez tuvo oportunidad y aún así, le es imposible olvidarte o borrarte de su mente.
+              </p>
+              <p>
+                Sinceramente, Carlos.
+              </p>
+        <div class="letter-copy">
+        </div>
+      </div>
+
+      <div class="scroll-hint" aria-hidden="true"></div>
+    </article>
+  </main>
+
+  <audio id="ambientAudio" preload="auto" loop>
+    <source src="res/ambiente.wav" type="audio/wav">
+  </audio>
+
+  <audio id="paperAudio" preload="auto">
+    <source src="res/paper.wav" type="audio/wav">
+  </audio>
+
+  <audio id="musicAudio" preload="auto">
+    <source src="res/E-Ballad.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const body = document.body;
+    const startButton = document.querySelector(".start-button");
+    const video = document.querySelector(".sky-video");
+    const ambientAudio = document.querySelector("#ambientAudio");
+    const paperAudio = document.querySelector("#paperAudio");
+    const musicAudio = document.querySelector("#musicAudio");
+    const letterCard = document.querySelector("#letterCard");
+    const letterScroll = document.querySelector("#letterScroll");
+
+    const revealDelay = 7000;
+    let hasStarted = false;
+    let hasRevealed = false;
+
+    ambientAudio.volume = 0.56;
+    paperAudio.volume = 0.9;
+    musicAudio.volume = 0.74;
+
+    function playMedia(media) {
+      const playAttempt = media.play();
+
+      if (playAttempt && typeof playAttempt.catch === "function") {
+        playAttempt.catch(() => {});
+      }
+
+      return playAttempt;
+    }
+
+    function unlockAudio(media) {
+      const originalVolume = media.volume;
+      media.volume = 0;
+
+      const attempt = media.play();
+
+      if (attempt && typeof attempt.then === "function") {
+        attempt
+          .then(() => {
+            if (!hasRevealed) {
+              media.pause();
+              media.currentTime = 0;
+            }
+
+            media.volume = originalVolume;
+          })
+          .catch(() => {
+            media.volume = originalVolume;
+          });
+      } else {
+        media.volume = originalVolume;
+      }
+    }
+
+    function fadeVolume(media, targetVolume, duration) {
+      const startVolume = media.volume;
+      const startedAt = performance.now();
+
+      function step(now) {
+        const progress = Math.min((now - startedAt) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        media.volume = startVolume + (targetVolume - startVolume) * eased;
+
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        }
+      }
+
+      requestAnimationFrame(step);
+    }
+
+    function updateScrollHint() {
+      const canScroll = letterScroll.scrollHeight > letterScroll.clientHeight + 2;
+      const isNearBottom =
+        letterScroll.scrollTop + letterScroll.clientHeight >=
+        letterScroll.scrollHeight - 12;
+
+      letterCard.classList.toggle(
+        "has-more",
+        hasRevealed && canScroll && !isNearBottom
+      );
+    }
+
+    function revealLetter() {
+      if (hasRevealed) {
+        return;
+      }
+
+      hasRevealed = true;
+      body.classList.add("letter-visible");
+
+      paperAudio.volume = 0.9;
+      paperAudio.currentTime = 0;
+      playMedia(paperAudio);
+
+      musicAudio.volume = 0.74;
+      musicAudio.currentTime = 0;
+      playMedia(musicAudio);
+
+      if (ambientAudio.paused) {
+        playMedia(ambientAudio);
+      }
+
+      fadeVolume(ambientAudio, 0.08, 2200);
+
+      requestAnimationFrame(updateScrollHint);
+      setTimeout(updateScrollHint, 600);
+      letterScroll.focus({ preventScroll: true });
+    }
+
+    function startExperience() {
+      if (hasStarted) {
+        return;
+      }
+
+      hasStarted = true;
+      body.classList.add("started");
+
+      unlockAudio(paperAudio);
+      unlockAudio(musicAudio);
+      playMedia(video);
+      playMedia(ambientAudio);
+
+      window.setTimeout(revealLetter, revealDelay);
+    }
+
+    startButton.addEventListener("click", startExperience);
+    letterScroll.addEventListener("scroll", updateScrollHint, { passive: true });
+    window.addEventListener("resize", updateScrollHint);
+    window.addEventListener("load", updateScrollHint);
+  </script>
+</body>
+</html>
